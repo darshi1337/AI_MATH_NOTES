@@ -1,8 +1,6 @@
 import tkinter as tk
-from PIL import Image, ImageDraw, ImageGrab, ImageFont, ImageTk
+from PIL import Image, ImageDraw, ImageFont
 from openai import OpenAI
-from tkinter import font as tkFont
-import pytesseract
 import base64
 
 class DrawingApp:
@@ -38,9 +36,10 @@ class DrawingApp:
         self.button_calculate = tk.Button(root, text="Calculate", command=self.calculate)
         self.button_calculate.pack(side=tk.LEFT)
 
-        self.custom_font = tkFont.Font(family="Noteworthy", size=100)
+        self.custom_font = ImageFont.truetype("arial.ttf", 100)  # Example font, replace with your custom font
 
-        self.client = OpenAI()
+        # Replace 'YOUR_OPENAI_API_KEY' with your actual OpenAI API key
+        self.client = OpenAI(api_key='YOUR_OPENAI_API_KEY')
 
     def start_draw(self, event):
         self.current_action = []
@@ -90,10 +89,10 @@ class DrawingApp:
         def encode_image(image_path):
             with open(image_path, "rb") as image_file:
                 return base64.b64encode(image_file.read()).decode('utf-8')
-            
+
         base64_image = encode_image("canvas_image.png")
 
-        response = self.client.chat.completions.create(
+        response = self.client.chat_completions.create(
             model="gpt-4o",
             messages=[
                 {
@@ -110,7 +109,7 @@ class DrawingApp:
             max_tokens=300,
         )
 
-        answer = response.choices[0].message.content
+        answer = response.choices[0].message["content"]
         self.draw_answer(answer)
         print(answer)
 
@@ -135,8 +134,7 @@ class DrawingApp:
         # Draw the text using the custom font
         self.canvas.create_text(x_start, y_start, text=answer, font=self.custom_font, fill="#FF9500")
 
-        font = ImageFont.load_default(size=100)
-        self.draw.text((x_start, y_start - 50), answer, font=font, fill="#FF9500")
+        self.draw.text((x_start, y_start - 50), answer, font=self.custom_font, fill="#FF9500")
 
 if __name__ == "__main__":
     root = tk.Tk()
